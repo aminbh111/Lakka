@@ -64,9 +64,12 @@ case "$LINUX" in
     PKG_VERSION="b39e1e3"
     PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
     ;;
-  awh3)
-    PKG_VERSION="awh3-3.4"
-    PKG_URL="https://github.com/jernejsk/OpenELEC-OPi2/raw/7de19646f7a8bf77df6f2f40fff7aa978f9beb67/storage/$PKG_NAME-$PKG_VERSION.tar.xz"
+  sun8i)
+    PKG_VERSION="f143b8a"
+    PKG_GIT_URL="https://github.com/jernejsk/linux.git"
+    PKG_GIT_BRANCH="master"
+    PKG_KEEP_CHECKOUT="yes"
+    PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET sunxi-tools:host sunxi-sys-utils"
     ;;
   *)
     PKG_VERSION="4.6.3"

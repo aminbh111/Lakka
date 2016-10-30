@@ -22,9 +22,9 @@ if [ "$UBOOT_VERSION" = "default" ]; then
   PKG_SITE="http://www.denx.de/wiki/U-Boot/WebHome"
   PKG_URL="ftp://ftp.denx.de/pub/u-boot/$PKG_NAME-$PKG_VERSION.tar.bz2"
 elif [ "$UBOOT_VERSION" = "sunxi" ]; then
-  PKG_VERSION="af9f405"
-  PKG_SITE="https://github.com/linux-sunxi/u-boot-sunxi"
-  PKG_URL="$LAKKA_MIRROR/u-boot-$PKG_VERSION.tar.xz"
+  PKG_VERSION="2016.09"
+  PKG_SITE="http://www.denx.de/wiki/U-Boot/WebHome"
+  PKG_URL="ftp://ftp.denx.de/pub/u-boot/$PKG_NAME-$PKG_VERSION.tar.bz2"
 elif [ "$UBOOT_VERSION" = "imx6-cuboxi" ]; then
   PKG_VERSION="imx6-e817fa3"
   PKG_SITE="http://imx.solid-run.com/wiki/index.php?title=Building_the_kernel_and_u-boot_for_the_CuBox-i_and_the_HummingBoard"
@@ -108,14 +108,37 @@ make_target() {
         TARGET_NAME="matrix"
       elif [ "$UBOOT_TARGET" = "udoo_config" ]; then
         TARGET_NAME="udoo"
+      elif [ "$UBOOT_TARGET" = "orangepi_2_defconfig" ]; then
+        TARGET_NAME="opi2"
+      elif [ "$UBOOT_TARGET" = "orangepi_pc_defconfig" ]; then
+        TARGET_NAME="opipc"
+      elif [ "$UBOOT_TARGET" = "orangepi_plus_defconfig" ]; then
+        TARGET_NAME="opiplus"
+      elif [ "$UBOOT_TARGET" = "orangepi_one_defconfig" ]; then
+        TARGET_NAME="opione"
+      elif [ "$UBOOT_TARGET" = "orangepi_lite_defconfig" ]; then
+        TARGET_NAME="opilite"
+      elif [ "$UBOOT_TARGET" = "Sinovoip_BPI_M2_plus_defconfig" ]; then
+        TARGET_NAME="bpim2p"
+      elif [ "$UBOOT_TARGET" = "orangepi_plus2e_defconfig" ]; then
+        TARGET_NAME="opiplus2e"
+      elif [ "$UBOOT_TARGET" = "orangepi_pc_plus_defconfig" ]; then
+        TARGET_NAME="opipcplus"
+      elif [ "$UBOOT_TARGET" = "Sinovoip_BPI_M3_defconfig" ]; then
+        TARGET_NAME="bpim3"
+      elif [ "$UBOOT_TARGET" = "beelink_x2_defconfig" ]; then
+        TARGET_NAME="bx2"
       else
         TARGET_NAME="undef"
       fi
 
       [ -f u-boot.img ] && mv u-boot.img u-boot-$TARGET_NAME.img || :
       [ -f u-boot.imx ] && mv u-boot.imx u-boot-$TARGET_NAME.imx || :
+      [ -f u-boot-sunxi-with-spl.bin ] && mv u-boot-sunxi-with-spl.bin uboot-sunxi-$TARGET_NAME.bin || :
       [ -f SPL ] && mv SPL SPL-$TARGET_NAME || :
     fi
+    
+    [ -f u-boot-sunxi-with-spl.bin ] && mv u-boot-sunxi-with-spl.bin uboot-sunxi-bpim3.bin || :
   done
 }
 
@@ -142,8 +165,12 @@ makeinstall_target() {
   mkdir -p $INSTALL/usr/share/bootloader
 
   cp ./u-boot*.imx $INSTALL/usr/share/bootloader 2>/dev/null || :
-  cp ./u-boot*.img $INSTALL/usr/share/bootloader 2>/dev/null || :
-  cp ./u-boot*.bin $INSTALL/usr/share/bootloader 2>/dev/null || :
+  #NOTE: sunxi u-boot build folder contains intermediate .img files which are not needed
+  if [ -f ./uboot-sunxi-opi2.bin -o -f ./uboot-sunxi-bpim3.bin ]; then
+    cp ./uboot-sunxi-*.bin $INSTALL/usr/share/bootloader 2>/dev/null
+  else
+    cp ./u-boot*.img $INSTALL/usr/share/bootloader 2>/dev/null || :
+  fi
   cp ./SPL* $INSTALL/usr/share/bootloader 2>/dev/null || :
 
   cp ./$UBOOT_CONFIGFILE $INSTALL/usr/share/bootloader 2>/dev/null || :
@@ -151,13 +178,4 @@ makeinstall_target() {
   cp -PRv $PKG_DIR/scripts/update.sh $INSTALL/usr/share/bootloader
 
   cp -PR $PROJECT_DIR/$PROJECT/bootloader/uEnv*.txt $INSTALL/usr/share/bootloader 2>/dev/null || :
-
-  if [ "$UBOOT_VERSION" = "sunxi" ]; then
-    #cp -RP $PROJECT_DIR/$PROJECT/bootloader/*.bin $INSTALL/usr/share/bootloader
-    cp -RP $PROJECT_DIR/$PROJECT/bootloader/uEnv.* $INSTALL/usr/share/bootloader
-  fi
-
-  if [ -f "$PROJECT_DIR/$PROJECT/bootloader/boot.ini" ]; then
-    cp -PR  $PROJECT_DIR/$PROJECT/bootloader/boot.ini $INSTALL/usr/share/bootloader
-  fi
 }
