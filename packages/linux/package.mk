@@ -168,6 +168,14 @@ pre_make_target() {
 make_target() {
   LDFLAGS="" make modules
   LDFLAGS="" make INSTALL_MOD_PATH=$INSTALL DEPMOD="$ROOT/$TOOLCHAIN/bin/depmod" modules_install
+
+  if [ "$LINUX" = "sun8i" ]; then
+    for all_fex in $PROJECT_DIR/$PROJECT/sys_config/*.fex; do
+      fex=$(basename $all_fex)
+      fex2bin $all_fex $fex
+    done
+  fi
+
   rm -f $INSTALL/lib/modules/*/build
   rm -f $INSTALL/lib/modules/*/source
 
