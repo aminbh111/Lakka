@@ -1,20 +1,39 @@
 PKG_NAME="sunxi-tools"
-PKG_VERSION="ed6f796"
-PKG_SITE="https://github.com/cubieboard/sunxi-tools"
-PKG_URL="$LAKKA_MIRROR/${PKG_NAME}-${PKG_VERSION}.tar.xz"
+PKG_VERSION="b7e092e"
 PKG_REV="1"
-PKG_ARCH="arm"
+PKG_ARCH="any"
 PKG_LICENSE="GPL"
-PKG_DEPENDS=""
-PKG_DEPENDS_HOST="toolchain libusb:host"
+PKG_SITE="https://github.com/linux-sunxi/sunxi-tools"
+PKG_GIT_URL="https://github.com/linux-sunxi/sunxi-tools.git"
+PKG_GIT_BRANCH="master"
+PKG_DEPENDS_HOST=""
 PKG_PRIORITY="optional"
 PKG_SECTION="tools"
-PKG_SHORTDESC="extra tools for cubieboards"
-PKG_LONGDESC="Tools to help hacking Allwinner A10 (aka sun4i) based devices and it's successors."
-PKG_IS_ADDON="no"
+PKG_SHORTDESC="sunxi-tools: Tools to help hacking Allwinner based devices."
+PKG_LONGDESC="sunxi-tools: Tools to help hacking Allwinner based devices."
 
+PKG_IS_ADDON="no"
 PKG_AUTORECONF="no"
 
+make_host() {
+  make clean
+  make fex2bin
+}
+
+make_target() {
+  make clean
+  make CC="$TARGET_CC" fex2bin
+  make CC="$TARGET_CC" bin2fex
+}
+
 makeinstall_host() {
-  find . -maxdepth 1 -type f -executable |while read file; do cp -vL $file $ROOT/$TOOLCHAIN/bin; done
+  cp -PR fex2bin $ROOT/$TOOLCHAIN/bin/
+  cp -PR sunxi-fexc $ROOT/$TOOLCHAIN/bin/
+}
+
+makeinstall_target() {
+  mkdir -p $INSTALL/usr/bin
+  cp -PR fex2bin $INSTALL/usr/bin
+  cp -PR bin2fex $INSTALL/usr/bin
+  cp -PR sunxi-fexc $INSTALL/usr/bin
 }
