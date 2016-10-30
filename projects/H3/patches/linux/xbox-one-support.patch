@@ -1,6 +1,5 @@
-diff -Naur linux-odroidc.git/drivers/input/joystick/xpad.c linux-odroidc.patch/drivers/input/joystick/xpad.c
---- linux-odroidc.git/drivers/input/joystick/xpad.c	2016-10-19 12:20:00.285557117 +0200
-+++ linux-odroidc.patch/drivers/input/joystick/xpad.c	2016-10-19 14:12:56.420954523 +0200
+--- linux-3.4/drivers/input/joystick/xpad.c	2016-10-19 12:20:00.285557117 +0200
++++ linux-3.4/drivers/input/joystick/xpad.c	2016-10-19 14:12:56.420954523 +0200
 @@ -31,12 +31,14 @@
   *  - the iForce driver    drivers/char/joystick/iforce.c
   *  - the skeleton-driver  drivers/usb/usb-skeleton.c
@@ -1589,4 +1588,3 @@ diff -Naur linux-odroidc.git/drivers/input/joystick/xpad.c linux-odroidc.patch/d
 +	.reset_resume	= xpad_resume,
  	.id_table	= xpad_table,
  };
- 
