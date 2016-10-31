@@ -20,8 +20,8 @@
 ################################################################################
 
 echo "getting sources..."
-  if [ ! -d u-boot-aml.git ]; then
-    git clone git://github.com/linux-sunxi/u-boot-sunxi.git u-boot-sunxi.git
+  if [ ! -d u-boot-sunxi.git ]; then
+    git clone git://github.com/lakka-opi/u-boot-2016.09.git u-boot-sunxi.git
   fi
 
   cd u-boot-sunxi.git
