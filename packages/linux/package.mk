@@ -66,9 +66,7 @@ case "$LINUX" in
     ;;
   sun8i)
     PKG_VERSION="f143b8a"
-    PKG_GIT_URL="https://github.com/jernejsk/linux.git"
-    PKG_GIT_BRANCH="master"
-    PKG_KEEP_CHECKOUT="yes"
+    PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET sunxi-tools:host sunxi-sys-utils"
     ;;
   *)
