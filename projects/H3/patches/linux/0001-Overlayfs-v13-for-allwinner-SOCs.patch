@@ -1,3 +1,52 @@
+From fb049e9635abc1b4e06c80d91fa7e4cccecfcbf5 Mon Sep 17 00:00:00 2001
+From: demetris <ierokipides.dem@gmail.com>
+Date: Tue, 1 Nov 2016 18:15:30 +0200
+Subject: [PATCH] Overlayfs v13 for allwinner SOCs
+
+get rid of s_files and files_lock
+
+commit eee5cc2702929fd41cce28058dc6d6717f723f87 upstream.
+
+The only thing we need it for is alt-sysrq-r (emergency remount r/o)
+and these days we can do just as well without going through the
+list of files.
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+[lizf: Backported to 3.4: adjust context]
+Signed-off-by: Zefan Li <lizefan@huawei.com>
+---
+ Documentation/filesystems/Locking       |   2 +
+ Documentation/filesystems/overlayfs.txt | 199 ++++++++++
+ Documentation/filesystems/vfs.txt       |   8 +
+ MAINTAINERS                             |   7 +
+ fs/Kconfig                              |   1 +
+ fs/Makefile                             |   1 +
+ fs/ecryptfs/main.c                      |   7 +
+ fs/namei.c                              |  48 ++-
+ fs/namespace.c                          |  18 +
+ fs/open.c                               |  69 ++--
+ fs/overlayfs/Kconfig                    |   4 +
+ fs/overlayfs/Makefile                   |   7 +
+ fs/overlayfs/copy_up.c                  | 385 ++++++++++++++++++
+ fs/overlayfs/dir.c                      | 602 +++++++++++++++++++++++++++++
+ fs/overlayfs/inode.c                    | 375 ++++++++++++++++++
+ fs/overlayfs/overlayfs.h                |  64 +++
+ fs/overlayfs/readdir.c                  | 566 +++++++++++++++++++++++++++
+ fs/overlayfs/super.c                    | 664 ++++++++++++++++++++++++++++++++
+ fs/splice.c                             |   1 +
+ include/linux/fs.h                      |  15 +
+ include/linux/mount.h                   |   3 +
+ 21 files changed, 3003 insertions(+), 43 deletions(-)
+ create mode 100644 Documentation/filesystems/overlayfs.txt
+ create mode 100644 fs/overlayfs/Kconfig
+ create mode 100644 fs/overlayfs/Makefile
+ create mode 100644 fs/overlayfs/copy_up.c
+ create mode 100644 fs/overlayfs/dir.c
+ create mode 100644 fs/overlayfs/inode.c
+ create mode 100644 fs/overlayfs/overlayfs.h
+ create mode 100644 fs/overlayfs/readdir.c
+ create mode 100644 fs/overlayfs/super.c
+
 diff --git a/Documentation/filesystems/Locking b/Documentation/filesystems/Locking
 index 4fca82e..42b0539 100644
 --- a/Documentation/filesystems/Locking
@@ -250,7 +299,7 @@ index 0d04920..f06c91f 100644
  The Address Space Object
  ========================
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b362709..7ba226c 100644
+index b0b614f..052bd39 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
 @@ -4998,6 +4998,13 @@ F:	drivers/scsi/osd/
@@ -268,7 +317,7 @@ index b362709..7ba226c 100644
  M:	Christian Lamparter <chunkeey@googlemail.com>
  L:	linux-wireless@vger.kernel.org
 diff --git a/fs/Kconfig b/fs/Kconfig
-index f95ae3a..e0c5d43 100644
+index 28116a3..5eae2dc 100755
 --- a/fs/Kconfig
 +++ b/fs/Kconfig
 @@ -67,6 +67,7 @@ source "fs/quota/Kconfig"
@@ -280,10 +329,10 @@ index f95ae3a..e0c5d43 100644
  config CUSE
  	tristate "Character device in Userspace support"
 diff --git a/fs/Makefile b/fs/Makefile
-index 2fb9779..fcd9788 100644
+index 7689cc7..eaaa7ed 100755
 --- a/fs/Makefile
 +++ b/fs/Makefile
-@@ -106,6 +106,7 @@ obj-$(CONFIG_QNX6FS_FS)		+= qnx6/
+@@ -107,6 +107,7 @@ obj-$(CONFIG_QNX6FS_FS)		+= qnx6/
  obj-$(CONFIG_AUTOFS4_FS)	+= autofs4/
  obj-$(CONFIG_ADFS_FS)		+= adfs/
  obj-$(CONFIG_FUSE_FS)		+= fuse/
@@ -292,10 +341,10 @@ index 2fb9779..fcd9788 100644
  obj-$(CONFIG_SUN_OPENPROMFS)	+= openpromfs/
  obj-$(CONFIG_OMFS_FS)		+= omfs/
 diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index 6895493..c54ea90 100644
+index 93b7bec..a782e11 100644
 --- a/fs/ecryptfs/main.c
 +++ b/fs/ecryptfs/main.c
-@@ -544,6 +544,13 @@ static struct dentry *ecryptfs_mount(struct file_system_type *fs_type, int flags
+@@ -576,6 +576,13 @@ static struct dentry *ecryptfs_mount(struct file_system_type *fs_type, int flags
  	s->s_maxbytes = path.dentry->d_sb->s_maxbytes;
  	s->s_blocksize = path.dentry->d_sb->s_blocksize;
  	s->s_magic = ECRYPTFS_SUPER_MAGIC;
@@ -310,10 +359,10 @@ index 6895493..c54ea90 100644
  	inode = ecryptfs_get_inode(path.dentry->d_inode, s);
  	rc = PTR_ERR(inode);
 diff --git a/fs/namei.c b/fs/namei.c
-index c427919..e172a5b 100644
+index e25f458..4b64305 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -328,6 +328,36 @@ static inline int do_inode_permission(struct inode *inode, int mask)
+@@ -331,6 +331,36 @@ static inline int do_inode_permission(struct inode *inode, int mask)
  }
  
  /**
@@ -350,7 +399,7 @@ index c427919..e172a5b 100644
   * inode_permission  -  check for access rights to a given inode
   * @inode:	inode to check permission on
   * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC, ...)
-@@ -341,8 +371,6 @@ static inline int do_inode_permission(struct inode *inode, int mask)
+@@ -344,8 +374,6 @@ static inline int do_inode_permission(struct inode *inode, int mask)
   */
  int inode_permission(struct inode *inode, int mask)
  {
@@ -359,7 +408,7 @@ index c427919..e172a5b 100644
  	if (unlikely(mask & MAY_WRITE)) {
  		umode_t mode = inode->i_mode;
  
-@@ -352,23 +380,9 @@ int inode_permission(struct inode *inode, int mask)
+@@ -355,23 +383,9 @@ int inode_permission(struct inode *inode, int mask)
  		if (IS_RDONLY(inode) &&
  		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
  			return -EROFS;
@@ -385,10 +434,10 @@ index c427919..e172a5b 100644
  
  /**
 diff --git a/fs/namespace.c b/fs/namespace.c
-index e608199..2551ec0 100644
+index f7be8d9..c06282a 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1325,6 +1325,24 @@ void drop_collected_mounts(struct vfsmount *mnt)
+@@ -1328,6 +1328,24 @@ void drop_collected_mounts(struct vfsmount *mnt)
  	release_mounts(&umount_list);
  }
  
@@ -414,7 +463,7 @@ index e608199..2551ec0 100644
  		   struct vfsmount *root)
  {
 diff --git a/fs/open.c b/fs/open.c
-index 5720854..3e132ba 100644
+index 703b051..2693b0f 100644
 --- a/fs/open.c
 +++ b/fs/open.c
 @@ -644,24 +644,24 @@ static inline int __get_file_write_access(struct inode *inode,
@@ -456,9 +505,9 @@ index 5720854..3e132ba 100644
 -	f->f_path.mnt = mnt;
 +	f->f_path = *path;
  	f->f_pos = 0;
- 	file_sb_list_add(f, inode->i_sb);
  
-@@ -727,7 +726,7 @@ cleanup_all:
+ 	if (unlikely(f->f_mode & FMODE_PATH)) {
+@@ -726,15 +725,14 @@ cleanup_all:
  			 * here, so just reset the state.
  			 */
  			file_reset_write(f);
@@ -466,8 +515,7 @@ index 5720854..3e132ba 100644
 +			mnt_drop_write(path->mnt);
  		}
  	}
- 	file_sb_list_del(f);
-@@ -735,8 +734,7 @@ cleanup_all:
+ 	f->f_path.dentry = NULL;
  	f->f_path.mnt = NULL;
  cleanup_file:
  	put_filp(f);
@@ -477,7 +525,7 @@ index 5720854..3e132ba 100644
  	return ERR_PTR(error);
  }
  
-@@ -762,14 +760,14 @@ cleanup_file:
+@@ -760,14 +758,14 @@ cleanup_file:
  struct file *lookup_instantiate_filp(struct nameidata *nd, struct dentry *dentry,
  		int (*open)(struct inode *, struct file *))
  {
@@ -494,7 +542,7 @@ index 5720854..3e132ba 100644
  					     open, cred);
  out:
  	return nd->intent.open.file;
-@@ -797,11 +795,9 @@ struct file *nameidata_to_filp(struct nameidata *nd)
+@@ -795,11 +793,9 @@ struct file *nameidata_to_filp(struct nameidata *nd)
  	nd->intent.open.file = NULL;
  
  	/* Has the filesystem initialised the file for us? */
@@ -509,7 +557,7 @@ index 5720854..3e132ba 100644
  	return filp;
  }
  
-@@ -812,27 +808,48 @@ struct file *nameidata_to_filp(struct nameidata *nd)
+@@ -810,27 +806,48 @@ struct file *nameidata_to_filp(struct nameidata *nd)
  struct file *dentry_open(struct dentry *dentry, struct vfsmount *mnt, int flags,
  			 const struct cred *cred)
  {
@@ -3122,7 +3170,7 @@ index 0000000..1d2d1e2
 +			break;
 +
 +		default:
-+			break;
++			return -EINVAL;
 +		}
 +	}
 +	return 0;
@@ -3264,7 +3312,7 @@ index 0000000..1d2d1e2
 +
 +static struct file_system_type ovl_fs_type = {
 +	.owner		= THIS_MODULE,
-+	.name		= "overlay",
++	.name		= "overlayfs",
 +	.mount		= ovl_mount,
 +	.kill_sb	= kill_anon_super,
 +};
@@ -3282,10 +3330,10 @@ index 0000000..1d2d1e2
 +module_init(ovl_init);
 +module_exit(ovl_exit);
 diff --git a/fs/splice.c b/fs/splice.c
-index f847684..c124964 100644
+index 2864177..64c9c26 100644
 --- a/fs/splice.c
 +++ b/fs/splice.c
-@@ -1299,6 +1299,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+@@ -1319,6 +1319,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
  
  	return ret;
  }
@@ -3294,7 +3342,7 @@ index f847684..c124964 100644
  static int splice_pipe_to_pipe(struct pipe_inode_info *ipipe,
  			       struct pipe_inode_info *opipe,
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 8de6755..0b531ab 100644
+index e7bbe99..bb596a3 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -489,6 +489,12 @@ struct iattr {
@@ -3310,7 +3358,7 @@ index 8de6755..0b531ab 100644
  /** 
   * enum positive_aop_returns - aop return codes with specific semantics
   *
-@@ -1507,6 +1513,11 @@ struct super_block {
+@@ -1496,6 +1502,11 @@ struct super_block {
  
  	/* Being remounted read-only */
  	int s_readonly_remount;
@@ -3322,7 +3370,7 @@ index 8de6755..0b531ab 100644
  };
  
  /* superblock cache pruning functions */
-@@ -1664,6 +1675,8 @@ struct inode_operations {
+@@ -1653,6 +1664,8 @@ struct inode_operations {
  	void (*truncate_range)(struct inode *, loff_t, loff_t);
  	int (*fiemap)(struct inode *, struct fiemap_extent_info *, u64 start,
  		      u64 len);
@@ -3331,7 +3379,7 @@ index 8de6755..0b531ab 100644
  } ____cacheline_aligned;
  
  struct seq_file;
-@@ -2021,6 +2034,7 @@ extern long do_sys_open(int dfd, const char __user *filename, int flags,
+@@ -2010,6 +2023,7 @@ extern long do_sys_open(int dfd, const char __user *filename, int flags,
  extern struct file *filp_open(const char *, int, umode_t);
  extern struct file *file_open_root(struct dentry *, struct vfsmount *,
  				   const char *, int);
@@ -3339,7 +3387,7 @@ index 8de6755..0b531ab 100644
  extern struct file * dentry_open(struct dentry *, struct vfsmount *, int,
  				 const struct cred *);
  extern int filp_close(struct file *, fl_owner_t id);
-@@ -2212,6 +2226,7 @@ extern sector_t bmap(struct inode *, sector_t);
+@@ -2202,6 +2216,7 @@ extern sector_t bmap(struct inode *, sector_t);
  #endif
  extern int notify_change(struct dentry *, struct iattr *);
  extern int inode_permission(struct inode *, int);
@@ -3348,10 +3396,10 @@ index 8de6755..0b531ab 100644
  
  static inline bool execute_ok(struct inode *inode)
 diff --git a/include/linux/mount.h b/include/linux/mount.h
-index d7029f4..344a262 100644
+index 2044aac..c68bc56 100644
 --- a/include/linux/mount.h
 +++ b/include/linux/mount.h
-@@ -66,6 +66,9 @@ extern void mnt_pin(struct vfsmount *mnt);
+@@ -68,6 +68,9 @@ extern void mnt_pin(struct vfsmount *mnt);
  extern void mnt_unpin(struct vfsmount *mnt);
  extern int __mnt_is_readonly(struct vfsmount *mnt);
  
@@ -3361,3 +3409,6 @@ index d7029f4..344a262 100644
  struct file_system_type;
  extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
  				      int flags, const char *name,
+-- 
+2.9.2
+
