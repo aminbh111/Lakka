@@ -49,7 +49,7 @@ case "$LINUX" in
     ;;
   linux-sun8i)
     PKG_VERSION="b0806e7"
-    PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
+    PKG_URL="192.168.1.240/$PKG_NAME-$PKG_VERSION.tar.xz"
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET sunxi-tools:host sunxi-sys-utils"
     ;;
   wandboard)
