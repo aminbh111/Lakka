@@ -21,7 +21,7 @@
 
 echo "getting sources..."
   if [ ! -d linux-sun8i.git ]; then
-    git clone https://github.com/jernejsk/linux.git -b master linux-sun8i.git
+    git clone https://github.com/lakka-opi/linux.git -b master linux-sun8i.git
   fi
 
   cd linux-sun8i.git

@@ -48,7 +48,7 @@ case "$LINUX" in
     PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
     ;;
   linux-sun8i)
-    PKG_VERSION="f143b8a"
+    PKG_VERSION="b0806e7"
     PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET sunxi-tools:host sunxi-sys-utils"
     ;;
@@ -68,10 +68,6 @@ case "$LINUX" in
   rpi)
     PKG_VERSION="b39e1e3"
     PKG_URL="$LAKKA_MIRROR/$PKG_NAME-$PKG_VERSION.tar.xz"
-    ;;
-  awh3)
-    PKG_VERSION="awh3-3.4"
-    PKG_URL="https://github.com/jernejsk/OpenELEC-OPi2/raw/7de19646f7a8bf77df6f2f40fff7aa978f9beb67/storage/$PKG_NAME-$PKG_VERSION.tar.xz"
     ;;
   *)
     PKG_VERSION="4.6.3"
