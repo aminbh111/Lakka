@@ -19,7 +19,7 @@
 ################################################################################
 
 PKG_NAME="sunxi-mali"
-PKG_VERSION="9bfb6eb"
+PKG_VERSION="3d0cb7d"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="nonfree"
