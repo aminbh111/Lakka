@@ -21,7 +21,7 @@
 
 echo "getting sources..."
   if [ ! -d sunxi-mali.git ]; then
-    git clone https://github.com/lakka-opi/sunxi-mali-proprietary.git -b master sunxi-mali.git
+    git clone https://github.com/linux-sunxi/sunxi-mali.git -b master sunxi-mali.git
   fi
 
   cd sunxi-mali.git
