@@ -104,32 +104,33 @@ pll_periph0 = 600
 pll_gpu = 576
 pll_periph1 = 600
 pll_de = 864
+pll_ddr = 153
 
 [dram_para]
-dram_clk = 624
+dram_clk = 672
 dram_type = 3
-dram_zq = 0x3b3bfb
+dram_zq = 0x3b3bf9
 dram_odt_en = 1
-dram_para1 = 283377664
+dram_para1 = 284430580
 dram_para2 = 0
 dram_mr0 = 6208
 dram_mr1 = 64
 dram_mr2 = 24
 dram_mr3 = 2
 dram_tpr0 = 0x48a192
-dram_tpr1 = 0x1c2418d
-dram_tpr2 = 0x76051
-dram_tpr3 = 0x0
+dram_tpr1 = 0x1b1a94b
+dram_tpr2 = 0x61043
+dram_tpr3 = 0xb4787896
 dram_tpr4 = 0x0
 dram_tpr5 = 0x0
 dram_tpr6 = 0x64
-dram_tpr7 = 0x0
+dram_tpr7 = 0x1e08a1e0
 dram_tpr8 = 0x0
 dram_tpr9 = 0x0
-dram_tpr10 = 0x0
-dram_tpr11 = 0x6aaa0000
-dram_tpr12 = 0x7979
-dram_tpr13 = 0x800800
+dram_tpr10 = 0x2535
+dram_tpr11 = 0x23330000
+dram_tpr12 = 0x8897
+dram_tpr13 = 0x4002910
 
 [wakeup_src_para]
 cpu_en = 0
