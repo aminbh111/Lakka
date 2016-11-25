@@ -19,7 +19,7 @@
 ################################################################################
 
 PKG_NAME="puae"
-PKG_VERSION="7cbc230"
+PKG_VERSION="99af768"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
