@@ -5,6 +5,10 @@ before_install:
   - sudo apt-get install gperf
   - sudo apt-get install cvs
   - sudo apt-get install xsltproc
+  - sudo apt-get install emerge
+  - emerge --unmerge dev-perl/XML-Parser 
+  - emerge dev-perl/XML-Parser 
+
   
 # Enable C++ support
 language: cpp
