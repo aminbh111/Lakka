@@ -1,5 +1,10 @@
 sudo: required
-
+before_install:
+  - sudo apt-get install texi2html
+  - sudo apt-get install gperf
+  - sudo apt-get install cvs
+  - sudo apt-get install xsltproc
+  
 # Enable C++ support
 language: cpp
 
