@@ -1,0 +1,11 @@
+sudo: required
+
+# Enable C++ support
+language: cpp
+
+# Compiler selection
+compiler:
+  - gcc
+ 
+script:
+  - DISTRO=Lakka PROJECT=H3 SYSTEM=opipc ARCH=arm make image -j9
