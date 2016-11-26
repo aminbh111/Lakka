@@ -17,4 +17,4 @@ compiler:
   - gcc
  
 script:
-  - DISTRO=Lakka PROJECT=H3 SYSTEM=opipc ARCH=arm make  image -j9 VERBOSE=0
+  - build.sh
