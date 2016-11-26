@@ -5,7 +5,6 @@ before_install:
   - sudo apt-get install gperf
   - sudo apt-get install cvs
   - sudo apt-get install xsltproc
-  - sudo apt-get install emerge
   - sudo apt-get install libxml-parser-perl
 
 
